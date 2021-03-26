@@ -7,19 +7,6 @@ editor Custom Element - just one tag, and no JS
 needed to provide [Ace](http://ace.c9.io/) - The High Performance Code Editor
 
 ## Usage example
-
-<!---
-```
-<custom-element-demo>
-  <template>
-    <script src="./@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-    <script src="../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-    <script type="module" src="../../@f0rce/lit-ace/lit-ace.js"></script>
-    <next-code-block></next-code-block>
-  </template>
-</custom-element-demo>
-```
--->
 ```html
   <lit-ace theme="terminal" mode="javascript" value="console.log('Have a great day :)')">
   </lit-ace>
