@@ -1,3 +1,5 @@
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/@f0rce/lit-ace)
+
 # lit-ace #
 
 Even <strong>more</strong> embeddable and lightweight code 
@@ -19,7 +21,7 @@ needed to provide [Ace](http://ace.c9.io/) - The High Performance Code Editor
 ```
 -->
 ```html
-  <lit-ace placeholder="Enter text here...">
+  <lit-ace theme="terminal" mode="javascript" value="console.log('Have a great day :)')">
   </lit-ace>
 ```
 
