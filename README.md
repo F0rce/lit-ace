@@ -19,7 +19,7 @@ needed to provide [Ace](http://ace.c9.io/) - The High Performance Code Editor
 ```
 -->
 ```html
-  <lit-ace placeholder="Enter text here..." >
+  <lit-ace placeholder="Enter text here...">
   </lit-ace>
 ```
 
