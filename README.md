@@ -1,8 +1,7 @@
-[![Published on NPM](https://img.shields.io/npm/v/@f0rce/lit-ace)](https://www.npmjs.com/package/@f0rce/lit-ace)[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FF0rce%2Flit-ace.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FF0rce%2Flit-ace?ref=badge_shield)
-
+[![Published on NPM](https://img.shields.io/npm/v/@f0rce/lit-ace)](https://www.npmjs.com/package/@f0rce/lit-ace)
 [![Downloads](https://img.shields.io/npm/dt/@f0rce/lit-ace)](https://www.npmjs.com/package/@f0rce/lit-ace)
-![GitHub](https://img.shields.io/github/license/f0rce/lit-ace)
-
+[![License](https://img.shields.io/github/license/f0rce/lit-ace)](https://github.com/F0rce/lit-ace/blob/master/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FF0rce%2Flit-ace.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FF0rce%2Flit-ace?ref=badge_shield)
 
 # lit-ace #
 
