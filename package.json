@@ -1,7 +1,7 @@
 {
   "name": "@f0rce/ace",
   "version": "1.0.0",
-  "description": "Lit-Element Wrapper for Ace Editor",
+  "description": "Lit-Element Wrapper around the Ace Editor (https://ace.c9.io/)",
   "main": "lit-ace.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
