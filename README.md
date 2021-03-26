@@ -1,4 +1,7 @@
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/@f0rce/lit-ace)
+[![Published on NPM](https://img.shields.io/npm/v/@f0rce/lit-ace)](https://www.npmjs.com/package/@f0rce/lit-ace)
+[![Downloads](https://img.shields.io/npm/dt/@f0rce/lit-ace)](https://www.npmjs.com/package/@f0rce/lit-ace)
+![GitHub](https://img.shields.io/github/license/f0rce/lit-ace)
+
 
 # lit-ace #
 
@@ -7,6 +10,7 @@ editor Custom Element - just one tag, and no JS
 needed to provide [Ace](http://ace.c9.io/) - The High Performance Code Editor
 
 ## Usage example
+
 ```html
   <lit-ace theme="terminal" mode="javascript" value="console.log('Have a great day :)')">
   </lit-ace>
