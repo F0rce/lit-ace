@@ -10,6 +10,8 @@ import { LitElement, html, css } from "lit-element";
 
 import "ace-builds/src-noconflict/ace.js";
 import "ace-builds/src-noconflict/ext-language_tools.js";
+import "ace-builds/src-noconflict/ext-static_highlight.js";
+import "ace-builds/webpack-resolver.js";
 
 var editorFocus = function () {
   var _self = this;
@@ -48,6 +50,7 @@ class LitAce extends LitElement {
       marker: { type: String },
       markerList: { type: Array },
       rmMarker: { type: String },
+      cursorPosition: { type: String },
     };
   }
 
@@ -77,6 +80,7 @@ class LitAce extends LitElement {
     this.marker = "-|-|-|-|-|-";
     this.markerList = { markers: [] };
     this.rmMarker = "";
+    this.cursorPosition = "0|0|-";
   }
 
   static get styles() {
@@ -158,6 +162,7 @@ class LitAce extends LitElement {
     this.editor = ace.edit(this.editorDiv);
     this.editor.focus = editorFocus;
     this.editor.langTools = ace.require("ace/ext/language_tools");
+    this.editor.staticHighlight = ace.require("ace/ext/static_highlight");
 
     let self = this;
     this.observer = new ResizeObserver(function (entries) {
@@ -196,12 +201,12 @@ class LitAce extends LitElement {
 
     this.editorValue = "";
     this._selection = this.selection;
+    this._cursorPosition = this.cursorPosition;
 
     editor.on("blur", () => this.editorBlurChangeAction());
     editor.selection.on("changeSelection", () =>
       this.updateSelectionAction(true)
     );
-    this.session = editor.getSession();
 
     if (this.initialFocus) {
       editor.focus();
@@ -252,7 +257,7 @@ class LitAce extends LitElement {
     if (this.editor == undefined) {
       return;
     }
-    this.session.setMode("ace/mode/" + this.mode);
+    this.editor.session.setMode("ace/mode/" + this.mode);
   }
 
   valueChanged() {
@@ -408,7 +413,7 @@ class LitAce extends LitElement {
     const uuid = String(rawSplit[5]);
 
     const Range = ace.require("ace/range").Range;
-    const _range = this.session.addMarker(
+    const _range = this.editor.session.addMarker(
       new Range(markerRowStart, markerFrom, markerRowEnd, markerTo),
       markerColor,
       "text",
@@ -439,6 +444,23 @@ class LitAce extends LitElement {
     }
   }
 
+  cursorPositionChanged() {
+    if (this.editor == undefined) {
+      return;
+    }
+
+    if (this.selection == "0|0-") {
+      return;
+    }
+
+    const cursorPosition = this.cursorPosition.split("|");
+    const row = parseInt(cursorPosition[0]);
+    const column = parseInt(cursorPosition[1]);
+
+    this.editor.moveCursorTo(row, column);
+    this.editorBlurChangeAction();
+  }
+
   editorBlurChangeAction() {
     this.updateSelectionAction(false);
     this.dispatchEvent(
@@ -446,10 +468,10 @@ class LitAce extends LitElement {
         detail: {
           value: this.editorValue,
           selection: this._selection,
+          cursorPosition: this._cursorPosition,
         },
       })
     );
-    this.selection = this._selection;
   }
 
   updateSelectionAction(sendEvent) {
@@ -462,16 +484,26 @@ class LitAce extends LitElement {
     const set = rowFrom + "|" + from + "|" + rowTo + "|" + to + "|-";
     this._selection = set;
 
+    const cursorPosition = this.editor.getCursorPosition();
+    const row = String(cursorPosition.row);
+    const column = String(cursorPosition.column);
+
+    this._cursorPosition = row + "|" + column + "|-";
+
     if (sendEvent == true) {
       this.dispatchEvent(
         new CustomEvent("editor-selection", {
           detail: {
             selection: this._selection,
+            cursorPosition: this._cursorPosition,
             selectedText: this.editor.getSelectedText(),
           },
         })
       );
     }
+
+    this.selection = this._selection;
+    this.cursorPosition = this._cursorPosition;
   }
 
   resizeEditor() {
@@ -482,20 +514,148 @@ class LitAce extends LitElement {
   }
 
   forceSync() {
+    this.updateSelectionAction(false);
     this.dispatchEvent(
       new CustomEvent("force-sync", {
         detail: {
           value: this.editorValue,
           selection: this._selection,
+          cursorPosition: this._cursorPosition,
           selectedText: this.editor.getSelectedText(),
         },
       })
     );
+    this.selection = this._selection;
+    this.cursorPosition = this._cursorPosition;
+  }
+
+  insertText(row, column, text) {
+    let positionObject = { row, column };
+    this.editor.session.insert(positionObject, text);
+    editorBlurChangeAction();
+  }
+
+  calculateCursorPositionFromIndex(index) {
+    var currentValue = this.editor.getValue();
+    var split = currentValue.split("\n");
+    var rowLengthObject = [];
+
+    for (let i = 0; i < split.length; i++) {
+      let totalLength;
+      if (i == split.length - 1) {
+        totalLength = split[i].length + 1;
+      } else if (i == 0) {
+        totalLength = split[i].length + rowLengthObject[i - 1].totalLength;
+      } else {
+        totalLength = split[i].length + 1 + rowLengthObject[i - 1].totalLength;
+      }
+
+      rowLengthObject.push({
+        row: i,
+        totalLength: totalLength,
+      });
+    }
+
+    for (let i = 0; i < rowLengthObject.length; i++) {
+      if (rowLengthObject.length == 1) {
+        this.editor.moveCursorTo(rowLengthObject[i].row, index);
+        this.editorBlurChangeAction();
+        return;
+      }
+      let currentLength = rowLengthObject[i].totalLength;
+      if (i == rowLengthObject.length - 1) {
+        this.editor.moveCursorTo(rowLengthObject[i].row, currentLength - index);
+        this.editorBlurChangeAction();
+        return;
+      }
+      let nextLength = rowLengthObject[i + 1].totalLength;
+      if (index >= currentLength && index <= nextLength) {
+        this.editor.moveCursorTo(
+          rowLengthObject[i + 1].row,
+          index - currentLength
+        );
+        this.editorBlurChangeAction();
+        return;
+      }
+    }
+  }
+
+  replaceTextAtSelection(text) {
+    this.editor.session.replace(this.editor.selection.getRange(), text);
+    this.editorBlurChangeAction();
+  }
+
+  generateHTML(raw) {
+    if (raw == true) {
+      let currentVal = this.editor.getValue();
+
+      currentVal = currentVal.replace(/[\u00A0-\u9999<>\&]/g, function (i) {
+        return "&#" + i.charCodeAt(0) + ";";
+      });
+      currentVal = currentVal.replace(new RegExp("\r?\n", "g"), "<br/>");
+      currentVal = currentVal.replace(/\s/g, "&nbsp;");
+
+      var htmlContent = `<!DOCTYPE html>
+<html>
+  <head>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet"> 
+    <style>
+      #aceRaw {
+        font-family: 'Source Code Pro', monospace;
+        font-size: 12px;
+      }     
+    </style>
+  </head>
+  <body>
+    <div id="aceRaw">${currentVal}</div>
+  </body>
+</html>`;
+
+      this.dispatchEvent(
+        new CustomEvent("html-generated", {
+          detail: {
+            html: htmlContent,
+          },
+        })
+      );
+    } else {
+      let self = this;
+      ace
+        .require("ace/config")
+        .loadModule("ace/ext/static_highlight", function (m) {
+          var result = m.renderSync(
+            self.editor.getValue(),
+            self.editor.session.getMode(),
+            self.editor.renderer.theme
+          );
+
+          var htmlContent = `<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      ${result.css} 
+    </style>
+  </head>
+    <body>
+      ${result.html}
+    </body>
+</html>`;
+
+          self.dispatchEvent(
+            new CustomEvent("html-generated", {
+              detail: {
+                html: htmlContent,
+              },
+            })
+          );
+        });
+    }
   }
 
   /**
-   * Injects a style element into ace-widget's shadow root
-   * @param {CSSSelector} selector for an element in the same shadow tree or document as `ace-widget`
+   * Injects a style element into lit-ace's shadow root
+   * @param {CSSSelector} selector for an element in the same shadow tree or document as `lit-ace`
    */
   injectStyle(selector) {
     const lightStyle =
