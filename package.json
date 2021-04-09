@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/f0rce/ace.git"
+    "url": "git+https://github.com/f0rce/lit-ace.git"
   },
   "author": "David Dodlek <david@dodlek.com>",
   "license": "MIT",
