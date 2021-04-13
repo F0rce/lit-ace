@@ -21,6 +21,7 @@ var editorFocus = function () {
   this.textInput.$focusScroll = "browser";
   this.textInput.focus();
 };
+
 class LitAce extends LitElement {
   static get properties() {
     return {
@@ -50,7 +51,6 @@ class LitAce extends LitElement {
       markerList: { type: Array },
       rmMarker: { type: String },
       cursorPosition: { type: String },
-      sendSelectionEvent: { type: Boolean },
     };
   }
 
@@ -76,12 +76,11 @@ class LitAce extends LitElement {
     this.highlightSelectedWord = false;
     this.selection = "0|0|0|0|-";
     this.useWorker = false;
-    this.customAutoCompletion = "||";
+    this.customAutoCompletion = "|";
     this.marker = "-|-|-|-|-|-";
     this.markerList = { markers: [] };
     this.rmMarker = "";
     this.cursorPosition = "0|0|-";
-    this.sendSelectionEvent = false;
   }
 
   static get styles() {
@@ -157,10 +156,6 @@ class LitAce extends LitElement {
       await import(`${baseUrl}ext-language_tools.js`);
     }
 
-    if (!ace.require("ace/ext/static_highlight")) {
-      await import(`${baseUrl}ext-static_highlight.js`);
-    }
-
     this.editorDiv = this.shadowRoot.getElementById("editor");
     this.editorContainerDiv = this.shadowRoot.getElementById("editorContainer");
 
@@ -212,7 +207,6 @@ class LitAce extends LitElement {
     editor.selection.on("changeSelection", () =>
       this.updateSelectionAction(true)
     );
-    editor.selection.on("changeCursor", () => this.updateSelectionAction(true));
 
     if (this.initialFocus) {
       editor.focus();
@@ -375,52 +369,28 @@ class LitAce extends LitElement {
     }
     const rawString = String(this.customAutoCompletion);
     const rawSplit = rawString.split("|");
-    if (rawString === "||") {
+    if (rawSplit[1] == "") {
       this.editor.completers = [
         this.editor.langTools.snippetCompleter,
         this.editor.langTools.keyWordCompleter,
       ];
     } else {
-      var conv = (rawSplit[2] === "true");
-      if (!conv) {
-        var staticWordCompleter = {
-          getCompletions: function (editor, session, pos, prefix, callback) {
-            const wordList = rawSplit[1].split(",");
-            callback(
-              null,
-              wordList.map(function (word) {
-                return {
-                  caption: word,
-                  value: word,
-                  meta: rawSplit[0],
-                };
-              })
-            );
-          },
-        };
-        this.editor.completers = [staticWordCompleter];
-      } else {
-        var staticWordCompleter = {
-          getCompletions: function (editor, session, pos, prefix, callback) {
-            const wordList = rawSplit[1].split(",");
-            callback(
-              null,
-              wordList.map(function (word) {
-                return {
-                  caption: word,
-                  value: word,
-                  meta: rawSplit[0],
-                };
-              })
-            );
-          },
-        };
-        this.editor.completers = [
-          staticWordCompleter,
-          this.editor.langTools.snippetCompleter,
-          this.editor.langTools.keyWordCompleter,
-        ];
-      }
+      var staticWordCompleter = {
+        getCompletions: function (editor, session, pos, prefix, callback) {
+          const wordList = rawSplit[1].split(",");
+          callback(
+            null,
+            wordList.map(function (word) {
+              return {
+                caption: word,
+                value: word,
+                meta: rawSplit[0],
+              };
+            })
+          );
+        },
+      };
+      this.editor.completers = [staticWordCompleter];
     }
   }
 
@@ -520,7 +490,7 @@ class LitAce extends LitElement {
 
     this._cursorPosition = row + "|" + column + "|-";
 
-    if (sendEvent && this.sendSelectionEvent) {
+    if (sendEvent == true) {
       this.dispatchEvent(
         new CustomEvent("editor-selection", {
           detail: {
@@ -555,6 +525,8 @@ class LitAce extends LitElement {
         },
       })
     );
+    this.selection = this._selection;
+    this.cursorPosition = this._cursorPosition;
   }
 
   insertText(row, column, text) {
