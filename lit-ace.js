@@ -486,7 +486,7 @@ class LitAce extends LitElement {
     const row = parseInt(cursorPosition[0]);
     const column = parseInt(cursorPosition[1]);
 
-    this.editor.moveCursorTo(row, column);
+    this.editor.gotoLine(row, column);
     this.editorBlurChangeAction();
   }
 
@@ -566,13 +566,71 @@ class LitAce extends LitElement {
 
     for (let i = 0; i < split.length; i++) {
       let totalLength;
-      if (i == split.length - 1) {
-        totalLength = split[i].length + 1;
-      } else if (i == 0) {
-        totalLength = split[i].length + rowLengthObject[i - 1].totalLength;
-      } else {
-        totalLength = split[i].length + 1 + rowLengthObject[i - 1].totalLength;
+      if (i === 0) {
+        totalLength = split[i].length + 1; // +1 for \n
+        rowLengthObject.push({
+          row: i + 1,
+          totalLength: totalLength,
+        });
+        continue;
       }
+      totalLength = split[i].length + 1 + rowLengthObject[i - 1].totalLength;
+      if (i === split.length - 1) totalLength--; // last line has no \n
+
+      rowLengthObject.push({
+        row: i + 1,
+        totalLength: totalLength,
+      });
+    }
+
+    for (let i = 0; i < rowLengthObject.length; i++) {
+      if (rowLengthObject.length === 1) {
+        this.editor.gotoLine(rowLengthObject[i].row, split[i].length);
+        this.editorBlurChangeAction();
+        return;
+      }
+      let currentLength = rowLengthObject[i].totalLength;
+      if (i === 0) {
+        if (index <= currentLength) {
+          this.editor.gotoLine(rowLengthObject[i].row, index);
+          this.editorBlurChangeAction();
+          return;
+        }
+        continue;
+      }
+      if (i === rowLengthObject.length - 1) {
+        this.editor.gotoLine(rowLengthObject[i].row, split[i].length);
+        this.editorBlurChangeAction();
+        return;
+      }
+      if (index <= currentLength) {
+        this.editor.gotoLine(
+          rowLengthObject[i].row,
+          index - rowLengthObject[i - 1].totalLength
+        );
+        this.editorBlurChangeAction();
+        return;
+      }
+    }
+  }
+
+  calculateSelectionByIndices(from, to) {
+    var currentValue = this.editorValue;
+    var split = currentValue.split("\n");
+    var rowLengthObject = [];
+
+    for (let i = 0; i < split.length; i++) {
+      let totalLength;
+      if (i === 0) {
+        totalLength = split[i].length + 1; // +1 for \n
+        rowLengthObject.push({
+          row: i,
+          totalLength: totalLength,
+        });
+        continue;
+      }
+      totalLength = split[i].length + 1 + rowLengthObject[i - 1].totalLength;
+      if (i === split.length - 1) totalLength--; // last line has no \n
 
       rowLengthObject.push({
         row: i,
@@ -580,24 +638,41 @@ class LitAce extends LitElement {
       });
     }
 
+    const Range = ace.require("ace/range").Range;
+    var rowFrom = 0,
+      fromC = from,
+      rowTo = 0,
+      toC = to;
+
     for (let i = 0; i < rowLengthObject.length; i++) {
-      if (rowLengthObject.length == 1) {
-        this.editor.moveCursorTo(rowLengthObject[i].row, index);
+      if (rowLengthObject.length === 1) {
+        this.editor.selection.setRange(new Range(rowFrom, from, rowTo, to));
         this.editorBlurChangeAction();
         return;
       }
       let currentLength = rowLengthObject[i].totalLength;
-      if (i == rowLengthObject.length - 1) {
-        this.editor.moveCursorTo(rowLengthObject[i].row, currentLength - index);
-        this.editorBlurChangeAction();
-        return;
+      if (i === 0) {
+        if (from <= currentLength && to <= currentLength) {
+          this.editor.selection.setRange(new Range(rowFrom, from, rowTo, to));
+          this.editorBlurChangeAction();
+          return;
+        }
+        continue;
       }
-      let nextLength = rowLengthObject[i + 1].totalLength;
-      if (index >= currentLength && index <= nextLength) {
-        this.editor.moveCursorTo(
-          rowLengthObject[i + 1].row,
-          index - currentLength
-        );
+      if (from <= currentLength) {
+        if (fromC === from) {
+          rowFrom = rowLengthObject[i].row;
+          fromC = from - rowLengthObject[i - 1].totalLength;
+        }
+      }
+      if (to <= currentLength) {
+        if (toC === to) {
+          rowTo = rowLengthObject[i].row;
+          toC = to - rowLengthObject[i - 1].totalLength;
+        }
+      }
+      if (i === rowLengthObject.length - 1) {
+        this.editor.selection.setRange(new Range(rowFrom, fromC, rowTo, toC));
         this.editorBlurChangeAction();
         return;
       }
@@ -675,6 +750,18 @@ class LitAce extends LitElement {
           );
         });
     }
+  }
+
+  unfold() {
+    this.editor.getSession().unfold();
+  }
+
+  foldAll() {
+    this.editor.getSession().foldAll();
+  }
+
+  foldAll(startRow) {
+    this.editor.getSession().foldAll(startRow);
   }
 
   /**
