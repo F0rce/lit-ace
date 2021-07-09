@@ -48,7 +48,7 @@ class LitAce extends LitElement {
     super();
     this.theme = "eclipse";
     this.mode = "javascript";
-    this.baseUrl = "../../ace-builds/src-min-noconflict/";
+    this.baseUrl = "/ace-builds/src-min-noconflict/";
     this.readonly = false;
     this.softtabs = true;
     this.wrap = false;
@@ -135,18 +135,16 @@ class LitAce extends LitElement {
   }
 
   async firstUpdated(changedProperties) {
-    let importPath = "../../ace-builds/src-noconflict/";
-
     if (!ace) {
-      await import(`${importPath}ace.js`);
+      await import("ace-builds/src-noconflict/ace");
     }
 
     if (!ace.require("ace/ext/language_tools")) {
-      await import(`${importPath}ext-language_tools.js`);
+      await import("ace-builds/src-noconflict/ext-language_tools");
     }
 
     if (!ace.require("ace/ext/static_highlight")) {
-      await import(`${importPath}ext-static_highlight.js`);
+      await import("ace-builds/src-noconflict/ext-static_highlight");
     }
 
     this.editorDiv = this.shadowRoot.getElementById("editor");
@@ -172,7 +170,7 @@ class LitAce extends LitElement {
     changedProperties.forEach((oldValue, propName) => {
       let funcToCall = propName + "Changed";
       if (typeof this[funcToCall] == "function") {
-        // This line if fucking epic
+        // This line if freaking epic
         this[funcToCall]();
       }
     });
@@ -241,10 +239,18 @@ class LitAce extends LitElement {
       enableLiveAutocompletion: this.enableLiveAutocompletion,
       placeholder: this.placeholder,
     });
+
+    this.dispatchEvent(new Event("editorInitialized"));
   }
 
   focusEditor() {
-    this.editor.focus();
+    if (this.editor == undefined) {
+      this.addEventListener("editorInitialized", (e) => this.editor.focus(), {
+        once: true,
+      });
+    } else {
+      this.editor.focus();
+    }
   }
 
   themeChanged() {
@@ -498,6 +504,7 @@ class LitAce extends LitElement {
           value: this.editorValue,
           selection: this._selection,
           cursorPosition: this._cursorPosition,
+          selectedText: this.editor.getSelectedText(),
         },
       })
     );
@@ -560,6 +567,18 @@ class LitAce extends LitElement {
   }
 
   calculateCursorPositionFromIndex(index) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editorInitialized",
+        (e) => this._calculateCursorPositionFromIndex(index),
+        { once: true }
+      );
+    } else {
+      this._calculateCursorPositionFromIndex(index);
+    }
+  }
+
+  _calculateCursorPositionFromIndex(index) {
     var currentValue = this.editorValue;
     var split = currentValue.split("\n");
     var rowLengthObject = [];
@@ -615,6 +634,18 @@ class LitAce extends LitElement {
   }
 
   calculateSelectionByIndices(from, to) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editorInitialized",
+        (e) => this._calculateSelectionByIndices(from, to),
+        { once: true }
+      );
+    } else {
+      this._calculateSelectionByIndices(from, to);
+    }
+  }
+
+  _calculateSelectionByIndices(from, to) {
     var currentValue = this.editorValue;
     var split = currentValue.split("\n");
     var rowLengthObject = [];
@@ -680,6 +711,18 @@ class LitAce extends LitElement {
   }
 
   replaceTextAtSelection(text) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editorInitialized",
+        (e) => this._replaceTextAtSelection(text),
+        { once: true }
+      );
+    } else {
+      this._replaceTextAtSelection(text);
+    }
+  }
+
+  _replaceTextAtSelection(text) {
     this.editor.session.replace(this.editor.selection.getRange(), text);
     this.editorBlurChangeAction();
   }
