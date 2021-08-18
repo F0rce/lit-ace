@@ -646,7 +646,7 @@ class LitAce extends LitElement {
     );
   }
 
-  editorBlurChangeAction() {
+  editorChangeAction() {
     this.dispatchEvent(
       new CustomEvent("editor-change", {
         detail: {
