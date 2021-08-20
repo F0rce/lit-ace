@@ -230,6 +230,7 @@ class LitAce extends LitElement {
 
     // blur
     editor.on("blur", () => this.editorBlurChangeAction());
+    editor.on("change", () => this.editorChangeAction());
 
     // selection change (with simple debounce) - 250ms delay
     var selectionTimeoutId = false;
@@ -640,6 +641,16 @@ class LitAce extends LitElement {
           selection: this._selection,
           cursorPosition: this._cursorPosition,
           selectedText: this.editor.getSelectedText(),
+        },
+      })
+    );
+  }
+
+  editorChangeAction() {
+    this.dispatchEvent(
+      new CustomEvent("editor-change", {
+        detail: {
+          value: this.editorValue
         },
       })
     );
