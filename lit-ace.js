@@ -230,6 +230,8 @@ class LitAce extends LitElement {
 
     // blur
     editor.on("blur", () => this.editorBlurChangeAction());
+
+    // change -> possibility to allow saving the value without having to wait for blur
     editor.on("change", () => this.editorChangeAction());
 
     // selection change (with simple debounce) - 250ms delay
@@ -650,7 +652,7 @@ class LitAce extends LitElement {
     this.dispatchEvent(
       new CustomEvent("editor-change", {
         detail: {
-          value: this.editorValue
+          value: this.editorValue,
         },
       })
     );
