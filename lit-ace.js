@@ -610,6 +610,10 @@ class LitAce extends LitElement {
   }
 
   dynamicAutocompletionChanged() {
+    if (this.editor == undefined) {
+      return;
+    }
+
     const parsed = JSON.parse(this.dynamicAutocompletion);
     const seperator = parsed.seperator;
     const list = parsed.list;
