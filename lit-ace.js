@@ -37,9 +37,9 @@ class LitAce extends LitElement {
       displayIndentGuides: { type: Boolean },
       highlightSelectedWord: { type: Boolean },
       useWorker: { type: Boolean },
-      marker: { type: String }, // TODO: use JSON as input
-      markerList: { type: Array }, // TODO: use global variable
       customAutocompletion: { type: String },
+      marker: { type: String }, // TODO: remove this, use markerList instead
+      markerList: { type: Array }, // TODO: kepp this, backend should create a json with all markers
       rmMarker: { type: String }, // TODO: use method
       statusbarEnabled: { type: Boolean },
       enableSnippets: { type: Boolean },
