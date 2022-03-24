@@ -9,7 +9,7 @@
       {"type": "perf", "hidden": true},
       {"type": "test", "hidden": true}
     ],
-    "commitUrlFormat": "https://github.com/f0rce/lit-ace/commits/{{hash}}",
+    "commitUrlFormat": "https://github.com/f0rce/lit-ace/commit/{{hash}}",
     "compareUrlFormat": "https://github.com/f0rce/lit-ace/compare/{{previousTag}}...{{currentTag}}"
   }
   
