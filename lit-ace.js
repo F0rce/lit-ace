@@ -37,9 +37,9 @@ class LitAce extends LitElement {
       displayIndentGuides: { type: Boolean },
       highlightSelectedWord: { type: Boolean },
       useWorker: { type: Boolean },
-      customAutoCompletion: { type: String }, // use JSON as input
       marker: { type: String }, // TODO: use JSON as input
       markerList: { type: Array }, // TODO: use global variable
+      customAutocompletion: { type: String },
       rmMarker: { type: String }, // TODO: use method
       statusbarEnabled: { type: Boolean },
       enableSnippets: { type: Boolean },
@@ -68,7 +68,6 @@ class LitAce extends LitElement {
     this.displayIndentGuides = false;
     this.highlightSelectedWord = false;
     this.useWorker = false;
-    this.customAutoCompletion = "||";
     this.marker = "-|-|-|-|-|-";
     this.markerList = { markers: [] };
     this.rmMarker = "";
@@ -469,60 +468,30 @@ class LitAce extends LitElement {
     this.editor.renderer.setShowGutter(this.showGutter);
   }
 
-  customAutoCompletionChanged() {
+  customAutocompletionChanged() {
     if (this.editor == undefined) {
       return;
     }
-    const rawString = String(this.customAutoCompletion);
-    const rawSplit = rawString.split("|");
-    if (rawString === "||") {
-      this.editor.completers = [
-        this.editor.langTools.snippetCompleter,
-        this.editor.langTools.keyWordCompleter,
-      ];
+
+    const parsed = JSON.parse(this.customAutocompletion);
+    const category = parsed.category;
+    const wordlist = parsed.wordlist;
+
+    var staticWordCompleter = {
+      getCompletions: function (editor, session, pos, prefix, callback) {
+        callback(
+          null,
+          wordlist.map(function (word) {
+            return { name: word, value: word, score: 10, meta: category };
+          })
+        );
+      },
+    };
+
+    if (parsed.keepcompleters) {
+      this.editor.completers.push(staticWordCompleter);
     } else {
-      var keepCurrentCompleters = rawSplit[2] === "true";
-      if (!keepCurrentCompleters) {
-        var staticWordCompleter = {
-          getCompletions: function (editor, session, pos, prefix, callback) {
-            const wordList = rawSplit[1].split(",");
-            callback(
-              null,
-              wordList.map(function (word) {
-                return {
-                  name: word,
-                  value: word,
-                  score: 10,
-                  meta: rawSplit[0],
-                };
-              })
-            );
-          },
-        };
-        this.editor.completers = [staticWordCompleter];
-      } else {
-        var staticWordCompleter = {
-          getCompletions: function (editor, session, pos, prefix, callback) {
-            const wordList = rawSplit[1].split(",");
-            callback(
-              null,
-              wordList.map(function (word) {
-                return {
-                  name: word,
-                  value: word,
-                  score: 10,
-                  meta: rawSplit[0],
-                };
-              })
-            );
-          },
-        };
-        this.editor.completers = [
-          staticWordCompleter,
-          this.editor.langTools.snippetCompleter,
-          this.editor.langTools.keyWordCompleter,
-        ];
-      }
+      this.editor.completers = [staticWordCompleter];
     }
   }
 
@@ -1215,6 +1184,27 @@ class LitAce extends LitElement {
     let found = this.editor.find(text);
     if (found) {
       this.editor.renderer.scrollCursorIntoView(found.start, 0.5);
+  disableCustomAutocompletion(useDefault) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editor-ready",
+        () => this._disableCustomAutocompletion(useDefault),
+        { once: true }
+      );
+    } else {
+      this._disableCustomAutocompletion(useDefault);
+    }
+  }
+
+  /** @private */
+  _disableCustomAutocompletion(useDefault) {
+    if (useDefault) {
+      this.editor.completers = [
+        this.editor.langTools.snippetCompleter,
+        this.editor.langTools.keyWordCompleter,
+      ];
+    } else {
+      this.editor.completers = [];
     }
   }
 
