@@ -259,10 +259,6 @@ class LitAce extends LitElement {
       }, 250);
     });
 
-    if (this.initialFocus) {
-      this.editor.focus();
-    }
-
     editor.$blockScrolling = Infinity;
 
     this.themeChanged();
@@ -275,8 +271,6 @@ class LitAce extends LitElement {
     editor.renderer.setShowGutter(this.showGutter);
     editor.renderer.setOption("displayIndentGuides", this.displayIndentGuides);
 
-    this.editorValue = "";
-
     editor.setOptions({
       autoScrollEditorIntoView: true,
       enableBasicAutocompletion: this.enableAutocompletion,
@@ -284,6 +278,12 @@ class LitAce extends LitElement {
       placeholder: this.placeholder,
       enableSnippets: this.enableSnippets,
     });
+
+    this.editorValue = "";
+
+    if (this.initialFocus) {
+      this.editor.focus();
+    }
 
     this.editor.statusbar = new this.statusBar(
       this.editor,
