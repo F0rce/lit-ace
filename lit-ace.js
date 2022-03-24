@@ -720,8 +720,8 @@ class LitAce extends LitElement {
 
   setSelection(json) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._setSelection(json), { once: true };
+      this.addEventListener("editor-ready", () => this._setSelection(json), {
+        once: true,
       });
     } else {
       this._setSelection(json);
@@ -744,9 +744,11 @@ class LitAce extends LitElement {
 
   setCursorPosition(json) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._setCursorPosition(json), { once: true };
-      });
+      this.addEventListener(
+        "editor-ready",
+        () => this._setCursorPosition(json),
+        { once: true }
+      );
     } else {
       this._setCursorPosition(json);
     }
@@ -761,8 +763,8 @@ class LitAce extends LitElement {
 
   setValue(value) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._setValue(value), { once: true };
+      this.addEventListener("editor-ready", () => this._setValue(value), {
+        once: true,
       });
     } else {
       this._setValue(value);
@@ -780,8 +782,8 @@ class LitAce extends LitElement {
 
   resizeEditor() {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._resizeEditor(), { once: true };
+      this.addEventListener("editor-ready", () => this._resizeEditor(), {
+        once: true,
       });
     } else {
       this._resizeEditor();
@@ -795,9 +797,11 @@ class LitAce extends LitElement {
 
   insertText(row, column, text) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._insertText(row, column, rext), { once: true };
-      });
+      this.addEventListener(
+        "editor-ready",
+        () => this._insertText(row, column, rext),
+        { once: true }
+      );
     } else {
       this._insertText(row, column, text);
     }
@@ -814,7 +818,7 @@ class LitAce extends LitElement {
     if (this.editor == undefined) {
       this.addEventListener(
         "editor-ready",
-        (e) => this._calculateCursorPositionFromIndex(index),
+        () => this._calculateCursorPositionFromIndex(index),
         { once: true }
       );
     } else {
@@ -882,7 +886,7 @@ class LitAce extends LitElement {
     if (this.editor == undefined) {
       this.addEventListener(
         "editor-ready",
-        (e) => this._calculateSelectionByIndices(from, to),
+        () => this._calculateSelectionByIndices(from, to),
         { once: true }
       );
     } else {
@@ -969,7 +973,7 @@ class LitAce extends LitElement {
     if (this.editor == undefined) {
       this.addEventListener(
         "editor-ready",
-        (e) => this._replaceTextAtSelection(text),
+        () => this._replaceTextAtSelection(text),
         { once: true }
       );
     } else {
@@ -989,7 +993,7 @@ class LitAce extends LitElement {
 
   generateHTML(raw) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", (e) => this._generateHTML(raw), {
+      this.addEventListener("editor-ready", () => this._generateHTML(raw), {
         once: true,
       });
     } else {
@@ -1068,7 +1072,7 @@ class LitAce extends LitElement {
 
   unfold() {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", (e) => this._unfold(), {
+      this.addEventListener("editor-ready", () => this._unfold(), {
         once: true,
       });
     } else {
@@ -1083,7 +1087,7 @@ class LitAce extends LitElement {
 
   foldAll() {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", (e) => this._foldAll(), {
+      this.addEventListener("editor-ready", () => this._foldAll(), {
         once: true,
       });
     } else {
@@ -1098,7 +1102,7 @@ class LitAce extends LitElement {
 
   foldAll(startRow) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", (e) => this._foldAll(startRow), {
+      this.addEventListener("editor-ready", () => this._foldAll(startRow), {
         once: true,
       });
     } else {
@@ -1113,7 +1117,7 @@ class LitAce extends LitElement {
 
   beautify() {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", (e) => this._beautify(), {
+      this.addEventListener("editor-ready", () => this._beautify(), {
         once: true,
       });
     } else {
@@ -1123,14 +1127,14 @@ class LitAce extends LitElement {
 
   /** @private */
   _beautify() {
-    this.editor.beautify.beautify(this.editor.session);
+    this.editor.beautify.beautify(this.editor.getSession());
     this.editorBlurChangeAction();
   }
 
   openAutocompletion() {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._openAutocompletion(), { once: true };
+      this.addEventListener("editor-ready", () => this._openAutocompletion(), {
+        once: true,
       });
     } else {
       this._openAutocompletion();
@@ -1144,8 +1148,8 @@ class LitAce extends LitElement {
 
   scrollToLine(line) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._scrollToLine(line), { once: true };
+      this.addEventListener("editor-ready", () => this._scrollToLine(line), {
+        once: true,
       });
     } else {
       this._scrollToLine(line);
@@ -1160,8 +1164,8 @@ class LitAce extends LitElement {
 
   scrollToEnd() {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._scrollToEnd(), { once: true };
+      this.addEventListener("editor-ready", () => this._scrollToEnd(), {
+        once: true,
       });
     } else {
       this._scrollToEnd();
@@ -1177,8 +1181,8 @@ class LitAce extends LitElement {
 
   findAndSelect(text) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => {
-        this._findAndSelect(text), { once: true };
+      this.addEventListener("editor-ready", () => this._findAndSelect(text), {
+        once: true,
       });
     } else {
       this._findAndSelect(text);
