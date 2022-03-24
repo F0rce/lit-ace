@@ -342,7 +342,7 @@ class LitAce extends LitElement {
     if (this.editor == undefined || value === undefined) {
       return;
     }
-    this.editor.setValue(value);
+    this.editor.setValue(value, 1);
   }
 
   readonlyChanged() {
