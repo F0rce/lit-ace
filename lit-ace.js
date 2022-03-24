@@ -1120,6 +1120,7 @@ class LitAce extends LitElement {
   /** @private */
   _beautify() {
     this.editor.beautify.beautify(this.editor.session);
+    this.editorBlurChangeAction();
   }
 
   openAutocompletion() {
@@ -1167,6 +1168,7 @@ class LitAce extends LitElement {
   _scrollToEnd() {
     let lastLine = this.editor.getSession().getLength();
     this.editor.scrollToLine(lastLine);
+    this.editorBlurChangeAction();
   }
 
   findAndSelect(text) {
@@ -1184,6 +1186,10 @@ class LitAce extends LitElement {
     let found = this.editor.find(text);
     if (found) {
       this.editor.renderer.scrollCursorIntoView(found.start, 0.5);
+      this.editorBlurChangeAction();
+    }
+  }
+
   disableCustomAutocompletion(useDefault) {
     if (this.editor == undefined) {
       this.addEventListener(
