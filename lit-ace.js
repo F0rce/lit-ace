@@ -1227,6 +1227,95 @@ class LitAce extends LitElement {
     }
   }
 
+  print(exportType) {
+    if (this.editor == undefined) {
+      this.addEventListener("editor-ready", () => this._print(exportType), {
+        once: true,
+      });
+    } else {
+      this._print(exportType);
+    }
+  }
+
+  /** @private */
+  _print(exportType) {
+    if (exportType.toLowerCase() == "flat") {
+      let currentVal = this.editorValue;
+
+      currentVal = currentVal.replace(/[\u00A0-\u9999<>\&]/g, function (i) {
+        return "&#" + i.charCodeAt(0) + ";";
+      });
+      currentVal = currentVal.replace(new RegExp("\r?\n", "g"), "<br/>");
+      currentVal = currentVal.replace(/\s/g, "&nbsp;");
+
+      var htmlContent = `<!DOCTYPE html>
+<html>
+  <head>
+  <title>Ace Export</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+    <style>
+      #aceRaw {
+        font-family: 'Source Code Pro', monospace;
+        font-size: 12px;
+      }
+      @media print {
+        @page {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        body {
+            padding-top: 72px;
+            padding-bottom: 72px ;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="aceRaw">${currentVal}</div>
+  </body>
+</html>`;
+
+      this.initializePrint(htmlContent);
+    } else if (exportType.toLowerCase() == "rich") {
+      let self = this;
+      ace
+        .require("ace/config")
+        .loadModule("ace/ext/static_highlight", function (m) {
+          var result = m.renderSync(
+            self.editor.getValue(),
+            self.editor.session.getMode(),
+            self.editor.renderer.theme
+          );
+
+          var htmlContent = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ace Export</title>
+    <style>
+      ${result.css}
+      @media print {
+        @page {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        body {
+            padding-top: 72px;
+            padding-bottom: 72px ;
+        }
+      }
+    </style>
+  </head>
+    <body>
+      ${result.html}
+    </body>
+</html>`;
+
+          self.initializePrint(htmlContent);
+        });
+    }
+  }
+
   /** @private */
   _createSelectionObject() {
     let editor = this.editor;
@@ -1274,6 +1363,53 @@ class LitAce extends LitElement {
       }
       this.editorStatusbarDiv.style.bottom = height + 4 + "px";
     }
+  }
+
+  /** @private */
+  initializePrint(content) {
+    const popupWidth = 742;
+    const popupHeight = 600;
+
+    const dualScreenLeft =
+      window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+    const dualScreenTop =
+      window.screenTop !== undefined ? window.screenTop : window.screenY;
+
+    const width = window.innerWidth
+      ? window.innerWidth
+      : document.documentElement.clientWidth
+      ? document.documentElement.clientWidth
+      : screen.width;
+    const height = window.innerHeight
+      ? window.innerHeight
+      : document.documentElement.clientHeight
+      ? document.documentElement.clientHeight
+      : screen.height;
+
+    const systemZoom = width / window.screen.availWidth;
+    const left = (width - popupWidth) / 2 / systemZoom + dualScreenLeft;
+    const top = (height - popupHeight) / 2 / systemZoom + dualScreenTop;
+
+    var mywindow = window.open(
+      "",
+      "_blank",
+      `toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no,copyhistory=no,height=${
+        popupHeight / systemZoom
+      },width=${popupWidth / systemZoom},top=${top},left=${left}`
+    );
+
+    if (!mywindow || mywindow.closed || typeof mywindow.closed == "undefined") {
+      return;
+    }
+
+    mywindow.document.write(content);
+    mywindow.document.close();
+
+    mywindow.onload = function () {
+      mywindow.focus();
+      mywindow.print();
+      mywindow.close();
+    };
   }
 
   /**
