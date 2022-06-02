@@ -992,19 +992,23 @@ class LitAce extends LitElement {
     this.editorBlurChangeAction();
   }
 
-  generateHTML(raw) {
+  generateHTML(exportType) {
     if (this.editor == undefined) {
-      this.addEventListener("editor-ready", () => this._generateHTML(raw), {
-        once: true,
-      });
+      this.addEventListener(
+        "editor-ready",
+        () => this._generateHTML(exportType),
+        {
+          once: true,
+        }
+      );
     } else {
-      this._generateHTML(raw);
+      this._generateHTML(exportType);
     }
   }
 
   /** @private */
-  _generateHTML(raw) {
-    if (raw == true) {
+  _generateHTML(exportType) {
+    if (exportType.toLowerCase() == "flat") {
       let currentVal = this.editorValue;
 
       currentVal = currentVal.replace(/[\u00A0-\u9999<>\&]/g, function (i) {
@@ -1037,7 +1041,7 @@ class LitAce extends LitElement {
           },
         })
       );
-    } else {
+    } else if (exportType.toLowerCase() == "rich") {
       let self = this;
       ace
         .require("ace/config")
