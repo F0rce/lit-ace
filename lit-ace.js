@@ -194,6 +194,7 @@ class LitAce extends LitElement {
     this.editor.staticHighlight = ace.require("ace/ext/static_highlight");
     this.editor.beautify = ace.require("ace/ext/beautify");
     this.statusBar = ace.require("ace/ext/statusbar").StatusBar;
+    this.snippetManager = ace.require("ace/snippets").snippetManager;
 
     let self = this;
 
@@ -579,7 +580,7 @@ class LitAce extends LitElement {
       return;
     }
 
-    var snippetManager = ace.require("ace/snippets").snippetManager;
+    var snippetManager = this.snippetManager;
     var snippets = snippetManager.files;
 
     if (!this.enableSnippets) {
