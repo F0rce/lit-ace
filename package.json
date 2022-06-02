@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/f0rce/lit-ace#readme",
   "dependencies": {
-    "@f0rce/ace-builds": "^1.6.1",
+    "@f0rce/ace-builds": "^1.6.2",
     "lit": "^2.2.5"
   },
   "devDependencies": {
