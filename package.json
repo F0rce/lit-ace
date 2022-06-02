@@ -19,12 +19,12 @@
   },
   "homepage": "https://github.com/f0rce/lit-ace#readme",
   "dependencies": {
-    "@f0rce/ace-builds": "^1.5.3",
-    "lit": "^2.2.2"
+    "@f0rce/ace-builds": "^1.6.1",
+    "lit": "^2.2.5"
   },
   "devDependencies": {
     "@types/ace": "^0.0.47",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
-    "standard-version": "^9.3.2"
+    "@webcomponents/webcomponentsjs": "^2.6.0",
+    "standard-version": "^9.5.0"
   }
 }
