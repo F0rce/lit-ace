@@ -190,6 +190,7 @@ class LitAce extends LitElement {
     this.editorStatusbarDiv = this.shadowRoot.getElementById("editorStatusbar");
 
     this.editor = ace.edit(this.editorDiv);
+    this.editor.renderer.attachToShadowRoot();
     this.editor.langTools = ace.require("ace/ext/language_tools");
     this.editor.staticHighlight = ace.require("ace/ext/static_highlight");
     this.editor.beautify = ace.require("ace/ext/beautify");
@@ -237,8 +238,6 @@ class LitAce extends LitElement {
 
   initializeEditor() {
     let editor = this.editor;
-
-    this.injectStyle("#ace_editor\\.css");
 
     ace.config.set("basePath", this.baseUrl);
     ace.config.set("modePath", this.baseUrl);
@@ -1410,17 +1409,6 @@ class LitAce extends LitElement {
       mywindow.print();
       mywindow.close();
     };
-  }
-
-  /**
-   * Injects a style element into lit-ace's shadow root
-   * @param {CSSSelector} selector for an element in the same shadow tree or document as `lit-ace`
-   */
-  injectStyle(selector) {
-    const lightStyle =
-      this.getRootNode().querySelector(selector) ||
-      document.querySelector(selector);
-    this.shadowRoot.appendChild(lightStyle.cloneNode(true));
   }
 }
 
