@@ -285,9 +285,11 @@ class LitAce extends LitElement {
       this.editor.focus();
     }
 
+    this._statusbarIndex = 1;
     this.editor.statusbar = new this.statusBar(
       this.editor,
-      this.editorStatusbarDiv
+      this.editorStatusbarDiv,
+      this._statusbarIndex
     );
 
     this.vScrollbarObserver = new IntersectionObserver(
@@ -1266,53 +1268,37 @@ class LitAce extends LitElement {
         body {
             padding-top: 72px;
             padding-bottom: 72px ;
+  setStatusbarIndexing(statusbarIndex) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editor-ready",
+        () => this._setStatusbarIndexing(statusbarIndex),
+        {
+          once: true,
         }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="aceRaw">${currentVal}</div>
-  </body>
-</html>`;
-
-      this.initializePrint(htmlContent);
-    } else if (exportType.toLowerCase() == "rich") {
-      let self = this;
-      ace
-        .require("ace/config")
-        .loadModule("ace/ext/static_highlight", function (m) {
-          var result = m.renderSync(
-            self.editor.getValue(),
-            self.editor.session.getMode(),
-            self.editor.renderer.theme
-          );
-
-          var htmlContent = `<!DOCTYPE html>
-<html>
-  <head>
-    <title>Ace Export</title>
-    <style>
-      ${result.css}
-      @media print {
-        @page {
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-        body {
-            padding-top: 72px;
-            padding-bottom: 72px ;
-        }
-      }
-    </style>
-  </head>
-    <body>
-      ${result.html}
-    </body>
-</html>`;
-
-          self.initializePrint(htmlContent);
-        });
+      );
+    } else {
+      this._setStatusbarIndexing(statusbarIndex);
     }
+  }
+
+  /** @private */
+  _setStatusbarIndexing(statusbarIndex) {
+    if (statusbarIndex == this._statusbarIndex) return;
+
+    this._statusbarIndex = statusbarIndex;
+
+    for (const child of this.editorStatusbarDiv.childNodes) {
+      this.editorStatusbarDiv.removeChild(child);
+    }
+
+    this.editor.statusbar = new this.statusBar(
+      this.editor,
+      this.editorStatusbarDiv,
+      this._statusbarIndex
+    );
+
+    this.editor.statusbar.updateStatus(this.editor, this._statusbarIndex);
   }
 
   /** @private */
