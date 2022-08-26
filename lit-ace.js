@@ -37,13 +37,11 @@ class LitAce extends LitElement {
       displayIndentGuides: { type: Boolean },
       highlightSelectedWord: { type: Boolean },
       useWorker: { type: Boolean },
-      customAutocompletion: { type: String },
       marker: { type: String }, // TODO: remove this, use markerList instead
       markerList: { type: Array }, // TODO: kepp this, backend should create a json with all markers
       rmMarker: { type: String }, // TODO: use method
       statusbarEnabled: { type: Boolean },
       enableSnippets: { type: Boolean },
-      dynamicAutocompletion: { type: String },
     };
   }
 
@@ -470,33 +468,6 @@ class LitAce extends LitElement {
     this.editor.renderer.setShowGutter(this.showGutter);
   }
 
-  customAutocompletionChanged() {
-    if (this.editor == undefined) {
-      return;
-    }
-
-    const parsed = JSON.parse(this.customAutocompletion);
-    const category = parsed.category;
-    const wordlist = parsed.wordlist;
-
-    var staticWordCompleter = {
-      getCompletions: function (editor, session, pos, prefix, callback) {
-        callback(
-          null,
-          wordlist.map(function (word) {
-            return { name: word, value: word, score: 10, meta: category };
-          })
-        );
-      },
-    };
-
-    if (parsed.keepcompleters) {
-      this.editor.completers.push(staticWordCompleter);
-    } else {
-      this.editor.completers = [staticWordCompleter];
-    }
-  }
-
   markerChanged() {
     if (this.editor == undefined) {
       return;
@@ -608,70 +579,6 @@ class LitAce extends LitElement {
           }
         }
       }
-    }
-  }
-
-  dynamicAutocompletionChanged() {
-    if (this.editor == undefined) {
-      return;
-    }
-
-    const parsed = JSON.parse(this.dynamicAutocompletion);
-    const seperator = parsed.seperator;
-    const list = parsed.list;
-    const keys = Object.keys(list);
-    const defaultCallback = keys.map(function (word) {
-      return {
-        name: word,
-        value: word,
-        score: 50,
-        meta: parsed.category,
-      };
-    });
-
-    var dynamicCompletion = {
-      getCompletions: function (editor, session, pos, prefix, callback) {
-        var curLine = session.getDocument().getLine(pos.row);
-        var curTokens = curLine.slice(0, pos.column).split(/\s+/);
-        var curCmd = curTokens[curTokens.length - 1];
-        if (!curCmd) {
-          callback(null, defaultCallback);
-          return;
-        }
-        const seperatorReplaced = seperator.replace(
-          /[-\/\\^$*+?.()|[\]{}]/g,
-          "\\$&"
-        );
-        var canidates = [];
-        const match = curCmd.match(
-          new RegExp(`(${keys.join("|")}){1}(?=${seperatorReplaced})`, "i")
-        );
-        if (match) {
-          const keyword = match[0];
-          for (var option of list[keyword]) {
-            canidates.push(keyword + seperator + option);
-          }
-          callback(
-            null,
-            canidates.map(function (option) {
-              return {
-                name: option,
-                value: option,
-                score: 100,
-                meta: keyword,
-              };
-            })
-          );
-        } else {
-          callback(null, defaultCallback);
-        }
-      },
-    };
-
-    if (parsed.keepcompleters) {
-      this.editor.completers.push(dynamicCompletion);
-    } else {
-      this.editor.completers = [dynamicCompletion];
     }
   }
 
@@ -1219,6 +1126,119 @@ class LitAce extends LitElement {
     );
 
     this.editor.statusbar.updateStatus(this.editor, this._statusbarIndex);
+  }
+
+  addStaticWordCompleter(json) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editor-ready",
+        () => this._addStaticWordCompleter(json),
+        {
+          once: true,
+        }
+      );
+    } else {
+      this._addStaticWordCompleter(json);
+    }
+  }
+
+  /** @private */
+  _addStaticWordCompleter(json) {
+    const parsed = JSON.parse(json);
+    const category = parsed.category;
+    const words = parsed.words;
+
+    var staticWordCompleter = {
+      getCompletions: function (editor, session, pos, prefix, callback) {
+        callback(
+          null,
+          words.map(function (word) {
+            return { name: word, value: word, score: 10, meta: category };
+          })
+        );
+      },
+    };
+
+    if (parsed.keepCompleters) {
+      this.editor.completers.push(staticWordCompleter);
+    } else {
+      this.editor.completers = [staticWordCompleter];
+    }
+  }
+
+  addDynamicWordCompleter(json) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editor-ready",
+        () => this._addDynamicWordCompleter(json),
+        {
+          once: true,
+        }
+      );
+    } else {
+      this._addDynamicWordCompleter(json);
+    }
+  }
+
+  /** @private */
+  _addDynamicWordCompleter(json) {
+    const parsed = JSON.parse(json);
+    const seperator = parsed.seperator;
+    const list = parsed.dynamicWords;
+    const keys = Object.keys(list);
+    const defaultCallback = keys.map(function (word) {
+      return {
+        name: word,
+        value: word,
+        score: 50,
+        meta: parsed.category,
+      };
+    });
+
+    var dynamicCompletion = {
+      getCompletions: function (editor, session, pos, prefix, callback) {
+        var curLine = session.getDocument().getLine(pos.row);
+        var curTokens = curLine.slice(0, pos.column).split(/\s+/);
+        var curCmd = curTokens[curTokens.length - 1];
+        if (!curCmd) {
+          callback(null, defaultCallback);
+          return;
+        }
+        const seperatorReplaced = seperator.replace(
+          /[-\/\\^$*+?.()|[\]{}]/g,
+          "\\$&"
+        );
+        var canidates = [];
+        const match = curCmd.match(
+          new RegExp(`(${keys.join("|")}){1}(?=${seperatorReplaced})`, "i")
+        );
+        if (match) {
+          const keyword = match[0];
+          for (var option of list[keyword]) {
+            canidates.push(keyword + seperator + option);
+          }
+          callback(
+            null,
+            canidates.map(function (option) {
+              return {
+                name: option,
+                value: option,
+                score: 100,
+                meta: keyword,
+              };
+            })
+          );
+        } else {
+          callback(null, defaultCallback);
+        }
+      },
+    };
+
+    if (parsed.keepCompleters) {
+      this.editor.completers.push(dynamicCompletion);
+    } else {
+      this.editor.completers = [dynamicCompletion];
+    }
   }
 
   /** @private */
