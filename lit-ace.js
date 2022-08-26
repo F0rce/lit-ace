@@ -1448,13 +1448,13 @@ class LitAce extends LitElement {
     const width = window.innerWidth
       ? window.innerWidth
       : document.documentElement.clientWidth
-      ? document.documentElement.clientWidth
-      : screen.width;
+        ? document.documentElement.clientWidth
+        : screen.width;
     const height = window.innerHeight
       ? window.innerHeight
       : document.documentElement.clientHeight
-      ? document.documentElement.clientHeight
-      : screen.height;
+        ? document.documentElement.clientHeight
+        : screen.height;
 
     const systemZoom = width / window.screen.availWidth;
     const left = (width - popupWidth) / 2 / systemZoom + dualScreenLeft;
@@ -1463,8 +1463,7 @@ class LitAce extends LitElement {
     var mywindow = window.open(
       "",
       "_blank",
-      `toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no,copyhistory=no,height=${
-        popupHeight / systemZoom
+      `toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no,copyhistory=no,height=${popupHeight / systemZoom
       },width=${popupWidth / systemZoom},top=${top},left=${left}`
     );
 
