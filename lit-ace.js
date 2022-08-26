@@ -195,6 +195,8 @@ class LitAce extends LitElement {
     this.statusBar = ace.require("ace/ext/statusbar").StatusBar;
     this.snippetManager = ace.require("ace/snippets").snippetManager;
 
+    this._customModes = new Map();
+
     let self = this;
 
     // when the CSS resize Property is added (to a container-div or lit-ace itself) the correct sizing is maintained (after user resize)
@@ -1238,6 +1240,75 @@ class LitAce extends LitElement {
       this.editor.completers.push(dynamicCompletion);
     } else {
       this.editor.completers = [dynamicCompletion];
+    }
+  }
+
+  addCustomMode(name, json) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editor-ready",
+        () => this._addCustomMode(name, json),
+        {
+          once: true,
+        }
+      );
+    } else {
+      this._addCustomMode(name, json);
+    }
+  }
+
+  /** @private */
+  _addCustomMode(name, json) {
+    let parsed;
+    try {
+      parsed = JSON.parse(json);
+    } catch (e) {
+      return;
+    }
+
+    var customModeFunction = function () {
+      this.$rules = parsed.states;
+
+      this.normalizeRules();
+    }
+
+    try {
+      ace.require("ace/lib/oop").inherits(customModeFunction, ace.require("ace/mode/text_highlight_rules").TextHighlightRules);
+    } catch (error) {
+      console.error(error)
+      return;
+    }
+
+    var TextMode = ace.require("ace/mode/text").Mode;
+
+    var customMode = new TextMode();
+    customMode.HighlightRules = customModeFunction;
+
+    this._customModes.set(name, customMode);
+  }
+
+  setCustomMode(mode) {
+    if (this.editor == undefined) {
+      this.addEventListener(
+        "editor-ready",
+        () => this._setCustomMode(mode),
+        {
+          once: true,
+        }
+      );
+    } else {
+      this._setCustomMode(mode);
+    }
+  }
+
+  /** @private */
+  _setCustomMode(mode) {
+    if (this._customModes.has(mode)) {
+      try {
+        this.editor.getSession().setMode(this._customModes.get(mode));
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 
