@@ -16,7 +16,7 @@ import "@f0rce/ace-builds/src-noconflict/ext-statusbar.js";
 import "@f0rce/ace-builds/src-noconflict/snippets/snippets.js";
 
 const CUSTOM_KEYWORD = "custom";
-class LitAce extends LitElement {
+export class LitAce extends LitElement {
   static get properties() {
     return {
       theme: { type: String, reflect: true },
