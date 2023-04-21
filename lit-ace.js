@@ -1271,6 +1271,22 @@ class LitAce extends LitElement {
     var customModeFunction = function () {
       this.$rules = parsed.states;
 
+      // Convert objects to keyword mappers
+      for (let key in this.$rules) {
+        let state = this.$rules[key];
+        for (let rule of state) {
+          let token = rule.token;
+          if (typeof token === "object") {
+            rule.token = this.createKeywordMapper(
+                token.map,
+                token.defaultToken,
+                token.ignoreCase,
+                token.splitChar
+            )
+          }
+        }
+      }
+
       this.normalizeRules();
     }
 
